@@ -1,8 +1,12 @@
 ###########
 # OPTIONS #
 ###########
+# UPDATED 07/20/15
 
-options(stringsAsFactors=FALSE)
+options(width = 80)
+options(max.print = 100)
+options(stringsAsFactors = FALSE)
+options(datatable.fread.datatable = FALSE)
 
 # effectively forces R to never use scientific notation to express very small or large numbers
 options(scipen=10)
@@ -33,39 +37,49 @@ utils::rc.settings(ipck=TRUE)
 	}
 }
 
-# defines a function that loads a library into the namespace without warning or startup messages
-sshhh <- function(a.package) {
-	suppressWarnings(suppressPackageStartupMessages(
-		library(a.package, character.only=TRUE)))
-}
-
 # defines the packages I want automatically loaded
-auto.loads <- c("dplyr", "ggplot2")
+# auto.loads <- c("dplyr", "ggplot2")
+
 # loads the packages in "auto.loads" if the R session is interactive
-if(interactive()) {
-	invisible(sapply(auto.loads, sshhh))
-}
+# if(interactive()) {
+# 	invisible(sapply(auto.loads, sshhh))
+# }
+
+# if(interactive()) {
+# 	invisible(suppressPackageStartupMessages(library("ggplot2")))
+# 	invisible(suppressPackageStartupMessages(library("dplyr")))
+# }
 
 ####################
 # CUSTOM FUNCTIONS #
 ####################
 
 # better defaults for write.csv
-write.csv <- function(adataframe, filename, ...){
-  outfile <- file(filename, "w", encoding="UTF-8")
-  utils::write.csv(adataframe, outfile, row.names=FALSE, ...)
-  close(outfile)
-}
+# write.csv <- function(adataframe, filename, ...){
+#   outfile <- file(filename, "w", encoding="UTF-8")
+#   utils::write.csv(adataframe, outfile, row.names=FALSE, ...)
+#   close(outfile)
+# }
 
 # Creates a new hidden namespace where we can store some functions in.
 # This is in order for these functions to survive a call to "rm(list=ls())"
 # which removes everything in the current namespace.
 .env <- new.env()
 
-# This defines a function to remove any row names a data.frame might have.
+# defines a function that loads a library into the namespace without warning or startup messages
+.env$shhh <- function(a.package) {
+	suppressWarnings(suppressPackageStartupMessages(
+	library(a.package, character.only=TRUE)))
+}
+
+.env$library_shh <- function(x, ...){
+  eval(substitute(suppressPackageStartupMessages(library(x, ...))))
+}
+
+# Strip row names from a data frame (stolen from plyr)
 .env$unrowname <- function(x) {
-	rownames(x) <- NULL
-	x
+    rownames(x) <- NULL
+    x
 }
 
 # This defines a function to sanely undo a "factor()" call.
@@ -75,7 +89,15 @@ write.csv <- function(adataframe, filename, ...){
 	df
 }
 
+# Returns names(df) in single column, numbered matrix format.
+.env$dfnames <- function(df) matrix(names(df))
+
 attach(.env)
 
+
+# Remind myself about changed defaults
+message("*** Changed Defaults: ***")
+message("options(stringsAsFactors=FALSE)")
+message("options(datatable.fread.datatable=FALSE)")
+message("\n*** Successfully loaded ~/.Rprofile ***\n")
 # helpful for warning myself if I meant to run vanilla R
-message("\n*** Successfully loaded .Rprofile ***\n")
