@@ -1,12 +1,13 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 07/20/15
+# UPDATED 08/11/15
 
 options(width = 80)
 options(max.print = 100)
 options(stringsAsFactors = FALSE)
 options(datatable.fread.datatable = FALSE)
+Sys.setenv(TZ='UTC')
 
 # effectively forces R to never use scientific notation to express very small or large numbers
 options(scipen=10)
@@ -99,5 +100,6 @@ attach(.env)
 message("*** Changed Defaults: ***")
 message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
+message("Sys.setenv(TZ='UTC'), not 'MDT'")
 message("\n*** Successfully loaded ~/.Rprofile ***\n")
 # helpful for warning myself if I meant to run vanilla R
