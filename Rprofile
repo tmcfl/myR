@@ -9,7 +9,9 @@ options(stringsAsFactors = FALSE)
 options(datatable.fread.datatable = FALSE)
 options(row.names = FALSE)
 #options(strip.white = TRUE)
-Sys.setenv(TZ='UTC')
+Sys.setenv(TZ = "UTC")
+Sys.setenv("plotly_api_key" = "rxwd8zm45i")
+Sys.setenv("plotly_username" = "tmcfl")
 
 # effectively forces R to never use scientific notation to express very small or large numbers
 options(scipen=10)
