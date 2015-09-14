@@ -4,7 +4,7 @@
 # UPDATED 08/12/15
 
 options(width = 80)
-options(max.print = 100)
+options(max.print = 500)
 options(stringsAsFactors = FALSE)
 options(datatable.fread.datatable = FALSE)
 options(row.names = FALSE)
