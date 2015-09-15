@@ -97,6 +97,18 @@ utils::rc.settings(ipck=TRUE)
 # Returns names(df) in single column, numbered matrix format.
 .env$dfnames <- function(df) matrix(names(df))
 
+# Quick defaults for data.table::fread
+.env$import_fread <- function(filepath, colclasses = NULL, sel = NULL){
+	df <- data.table::fread(input = filepath, na.strings = c("NA", "", " "), colClasses = colclasses, select = sel)
+	df
+}
+
+# Get the count of NA's per column of a data.frame
+.env$cntNA <- function(df){
+	df <- sapply(df, function(x) sum(is.na(x)))
+	return(data.frame(col = names(df), count_na = df, row.names = 1:length(df)))
+}
+
 attach(.env)
 
 
