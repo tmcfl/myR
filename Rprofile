@@ -104,9 +104,29 @@ utils::rc.settings(ipck=TRUE)
 }
 
 # Get the count of NA's per column of a data.frame
-.env$cntNA <- function(df){
+.env$count_na <- function(df){
 	df <- sapply(df, function(x) sum(is.na(x)))
 	return(data.frame(col = names(df), count_na = df, row.names = 1:length(df)))
+}
+
+# Get the count of unique values per column of a data.frame
+.env$count_unique <- function(df){
+	colclass <- sapply(df, class)
+	df <- sapply(df, function(x) {
+		ifelse(class(x) == "numeric" | class(x) == "integer", "--", length(unique(x)))
+		})
+	return(data.frame(col = names(df), col_class = colclass, count_unique = df, row.names = 1:length(df)))
+}
+
+# Convert a character string representing days of the week into an ordered factor (sun to sat)
+.env$dow2factor <- function(x){
+  if(min(nchar(x)) > 3){
+    d <- factor(x, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+  }
+  else{
+    d <- factor(x, levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+  }
+  d
 }
 
 attach(.env)
