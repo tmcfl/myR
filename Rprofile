@@ -1,7 +1,7 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 08/12/15
+# UPDATED 11/23/15
 
 options(width = 80)
 options(max.print = 500)
@@ -127,6 +127,23 @@ utils::rc.settings(ipck=TRUE)
     d <- factor(x, levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
   }
   d
+}
+
+# Create a new project directory
+.env$newProj <- function(proj_name){
+  path <- paste("~/projects", proj_name, sep = "/")
+  if(dir.exists(path) == FALSE){
+    dir.create(path)
+    setwd(path)
+    dir.create("data")
+    dir.create("functions")
+    dir.create("output")
+    dir.create("plots")
+    dir.create("references")
+    dir.create("scripts")
+  } else {
+    warning("Project folder already exists")
+  }
 }
 
 attach(.env)
