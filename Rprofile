@@ -1,7 +1,7 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 11/23/15
+# UPDATED 2016-03-09
 
 options(width = 80)
 options(max.print = 500)
@@ -96,6 +96,14 @@ utils::rc.settings(ipck=TRUE)
 
 # Returns names(df) in single column, numbered matrix format.
 .env$dfnames <- function(df) matrix(names(df))
+
+# Makes names safer
+.env$safenames <- function(names) {
+  names <- gsub('[^a-z0-9]+', '_', tolower(names))
+  names <- make.names(names, unique = TRUE, allow_ = TRUE)
+  names <- gsub('.', '_', names, fixed = TRUE)
+  names
+}
 
 # Quick defaults for data.table::fread
 .env$import_fread <- function(filepath, colclasses = NULL, sel = NULL){
