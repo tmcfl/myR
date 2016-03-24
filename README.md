@@ -1,5 +1,7 @@
 # myR
-A place to update and store my R configuration.
+A place to update and store my R configuration, and record packages downloaded from Github.
+- .RProfile
+- packages_from_github.R
 
 Excellent idea from https://github.com/tonyfischetti. 
 Here's [Tony's blog post](http://www.onthelambda.com/2014/09/17/fun-with-rprofile-and-customizing-r-startup/) 
