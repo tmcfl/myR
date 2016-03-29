@@ -112,19 +112,25 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Get the count of NA's per column of a data.frame
-.env$count_na <- function(df){
-	df <- sapply(df, function(x) sum(is.na(x)))
-	return(data.frame(col_name = names(df), cnt_na = df, row.names = 1:length(df)))
+.env$count_na <- function(df, include_pct = FALSE){
+	cnt_na <- sapply(df, function(x) sum(is.na(x)))
+	pct_na <- round(cnt_na / nrow(df), 8)
+	output <- data.frame(col_name = names(df), cnt_na = cnt_na, pct_na = pct_na, row.names = 1:length(df))
+	if (include_pct == TRUE) {
+	  return(output)
+	} else {
+	  return(output[, c(1, 2)])
+	}
 }
 
 # Get the count of unique values per column of a data.frame
-.env$count_unique <- function(df, include_na = TRUE, include_pct = FALSE) {
+.env$count_unique <- function(df, include_pct = FALSE, include_na = TRUE) {
   col_class <- apply(df, 2, class)
   cnt_unique <- apply(df, 2, function(x) length(unique(na.omit(x))))
   cnt_na <- apply(df, 2, function(x) sum(is.na(x)))
   
-  pct_unique <- round(cnt_unique / length(df), 8)
-  pct_na <- round(cnt_na / length(df), 8)
+  pct_unique <- round(cnt_unique / nrow(df), 8)
+  pct_na <- round(cnt_na / nrow(df), 8)
   
   output <- 
     data.frame(
