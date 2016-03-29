@@ -14,21 +14,21 @@ Sys.setenv(TZ = "UTC")
 #Sys.setenv("plotly_username" = "tmcfl")
 
 # effectively forces R to never use scientific notation to express very small or large numbers
-options(scipen=10)
+options(scipen = 10)
 
 # changes the continuation prompt to the wider "... " (instead of "+ ")
-options(prompt="> ")
-options(continue="... ")
+options(prompt = "> ")
+options(continue = "... ")
 
 # allows you to tab-complete package names for use in library() and require() calls
-utils::rc.settings(ipck=TRUE)
+utils::rc.settings(ipck = TRUE)
 
 # this instructs R to, before anything else, echo a timestamp to the console
 # and to my R history file. Saves every command run in the console to a history file.
 .First <- function() {
 	if(interactive()) {
 		library(utils)
-		timestamp(,prefix = paste("##------ [",getwd(),"] ",sep=""))
+		timestamp(, prefix = paste("##------ [", getwd(), "] ", sep = ""))
 	}
 }
 
@@ -37,7 +37,7 @@ utils::rc.settings(ipck=TRUE)
 .Last <- function() {
 	if(interactive()) {
 		hist_file <- Sys.getenv("R_HISTFILE")
-		if(hist_file=="") hist_file <- "~/.RHistory"
+		if(hist_file == "") hist_file <- "~/.RHistory"
 		savehistory(hist_file)
 	}
 }
@@ -90,7 +90,7 @@ utils::rc.settings(ipck=TRUE)
 # This defines a function to sanely undo a "factor()" call.
 .env$unfactor <- function(df) {
 	id <- sapply(df, is.factor)
-	df[id] <- lapply(df[id], as.character)
+	df[id] <- sapply(df[id], as.character)
 	df
 }
 
@@ -114,17 +114,47 @@ utils::rc.settings(ipck=TRUE)
 # Get the count of NA's per column of a data.frame
 .env$count_na <- function(df){
 	df <- sapply(df, function(x) sum(is.na(x)))
-	return(data.frame(col = names(df), count_na = df, row.names = 1:length(df)))
+	return(data.frame(col_name = names(df), cnt_na = df, row.names = 1:length(df)))
 }
 
 # Get the count of unique values per column of a data.frame
-.env$count_unique <- function(df){
-	colclass <- sapply(df, class)
-	df <- sapply(df, function(x) {
-		ifelse(class(x) == "numeric" | class(x) == "integer", "--", length(unique(x)))
-		})
-	return(data.frame(col = names(df), col_class = colclass, count_unique = df, row.names = 1:length(df)))
+.env$count_unique <- function(df, include_na = TRUE, include_pct = FALSE) {
+  col_class <- apply(df, 2, class)
+  cnt_unique <- apply(df, 2, function(x) length(unique(na.omit(x))))
+  cnt_na <- apply(df, 2, function(x) sum(is.na(x)))
+  
+  pct_unique <- round(cnt_unique / length(df), 8)
+  pct_na <- round(cnt_na / length(df), 8)
+  
+  output <- 
+    data.frame(
+      col_name = names(df),     # 1
+      col_class = col_class,    # 2
+      cnt_unique = cnt_unique,  # 3 - unique count
+      pct_unique = pct_unique,  # 4 - unique pct
+      cnt_na = cnt_na,          # 5 - na count
+      pct_na = pct_na,          # 6 - na pct
+      row.names = 1:length(df)
+    )
+  
+  if (include_na == TRUE & include_pct == FALSE) {
+    return(output[, c(1:3, 5)])
+  } else if (include_na == FALSE & include_pct == TRUE) {
+    return(output[, c(1:3, 4)])
+  } else if (include_na == TRUE & include_pct == TRUE) {
+    return(output)
+  } else {
+    return(output[, 1:3])
+  }
 }
+
+# .env$count_unique <- function(df){
+# 	colclass <- sapply(df, class)
+# 	df <- sapply(df, function(x) {
+# 		ifelse(class(x) == "numeric" | class(x) == "integer", "--", length(unique(x)))
+# 		})
+# 	return(data.frame(col = names(df), col_class = colclass, count_unique = df, row.names = 1:length(df)))
+# }
 
 # Convert a character string representing days of the week into an ordered factor (sun to sat)
 .env$dow2factor <- function(x){
