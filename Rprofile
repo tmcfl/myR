@@ -161,13 +161,14 @@ utils::rc.settings(ipck = TRUE)
   }
 }
 
-# .env$count_unique <- function(df){
-# 	colclass <- sapply(df, class)
-# 	df <- sapply(df, function(x) {
-# 		ifelse(class(x) == "numeric" | class(x) == "integer", "--", length(unique(x)))
-# 		})
-# 	return(data.frame(col = names(df), col_class = colclass, count_unique = df, row.names = 1:length(df)))
-# }
+# Check a data frame for columns with only 1 unique value (not counting missing)
+find_constants <- function(df, with_NAs = FALSE) {
+  if (with_NAs == TRUE) {
+    subset(count_unique(df), cnt_unique == 1 & cnt_na > 0)
+  } else {
+    subset(count_unique(df), cnt_unique == 1)
+  }
+}
 
 # Convert a character string representing days of the week into an ordered factor (sun to sat)
 .env$dow2factor <- function(x){
