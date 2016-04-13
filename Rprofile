@@ -114,7 +114,7 @@ utils::rc.settings(ipck = TRUE)
 # Get the count of NA's per column of a data.frame
 .env$count_na <- function(df, include_pct = FALSE, return_only_na_cols = FALSE){
 	df_dim <- dim(df)
-  cnt_na <- sapply(df, function(x) sum(is.na(x)))
+  cnt_na <- apply(df, 2, function(x) sum(is.na(x)))
 	pct_na <- round(cnt_na / df_dim[1], 8)
 	output <- data.frame(idx = 1:df_dim[2], col_name = names(df), cnt_na = cnt_na, row.names = NULL)
 	
@@ -162,7 +162,7 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Check a data frame for columns with only 1 unique value (not counting missing)
-find_constants <- function(df, with_NAs = FALSE) {
+.env$find_constants <- function(df, with_NAs = FALSE) {
   if (with_NAs == TRUE) {
     subset(count_unique(df), cnt_unique == 1 & cnt_na > 0)
   } else {
