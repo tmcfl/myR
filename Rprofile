@@ -112,15 +112,21 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Get the count of NA's per column of a data.frame
-.env$count_na <- function(df, include_pct = FALSE){
-	cnt_na <- sapply(df, function(x) sum(is.na(x)))
-	pct_na <- round(cnt_na / nrow(df), 8)
-	output <- data.frame(col_name = names(df), cnt_na = cnt_na, pct_na = pct_na, row.names = 1:length(df))
+.env$count_na <- function(df, include_pct = FALSE, return_only_na_cols = FALSE){
+	df_dim <- dim(df)
+  cnt_na <- sapply(df, function(x) sum(is.na(x)))
+	pct_na <- round(cnt_na / df_dim[1], 8)
+	output <- data.frame(idx = 1:df_dim[2], col_name = names(df), cnt_na = cnt_na, row.names = NULL)
+	
 	if (include_pct == TRUE) {
-	  return(output)
-	} else {
-	  return(output[, c(1, 2)])
+	  output$pct_na <- pct_na
 	}
+	
+	if (return_only_na_cols == TRUE) {
+	  output <- output[output$cnt_na > 0, ]
+	}
+	
+	output
 }
 
 # Get the count of unique values per column of a data.frame
@@ -134,23 +140,24 @@ utils::rc.settings(ipck = TRUE)
   
   output <- 
     data.frame(
-      col_name = names(df),     # 1
-      col_class = col_class,    # 2
-      cnt_unique = cnt_unique,  # 3 - unique count
-      pct_unique = pct_unique,  # 4 - unique pct
-      cnt_na = cnt_na,          # 5 - na count
-      pct_na = pct_na,          # 6 - na pct
-      row.names = 1:length(df)
+      idx = 1:length(df),       # 1
+      col_name = names(df),     # 2
+      col_class = col_class,    # 3
+      cnt_unique = cnt_unique,  # 4 - unique count
+      pct_unique = pct_unique,  # 5 - unique pct
+      cnt_na = cnt_na,          # 6 - na count
+      pct_na = pct_na,          # 7 - na pct
+      row.names = NULL
     )
   
   if (include_na == TRUE & include_pct == FALSE) {
-    return(output[, c(1:3, 5)])
+    return(output[, c(1:4, 6)])
   } else if (include_na == FALSE & include_pct == TRUE) {
-    return(output[, c(1:3, 4)])
+    return(output[, c(1:4, 5)])
   } else if (include_na == TRUE & include_pct == TRUE) {
     return(output)
   } else {
-    return(output[, 1:3])
+    return(output[, 1:4])
   }
 }
 
