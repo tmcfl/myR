@@ -161,13 +161,37 @@ utils::rc.settings(ipck = TRUE)
   }
 }
 
-# Check a data frame for columns with only 1 unique value (not counting missing)
+# Find columns in a data frame with only 1 unique value (not counting missing)
 .env$find_constants <- function(df, with_NAs = FALSE) {
   if (with_NAs == TRUE) {
     subset(count_unique(df), cnt_unique == 1 & cnt_na > 0)
   } else {
     subset(count_unique(df), cnt_unique == 1)
   }
+}
+
+# Find identical columns in a data frame
+.env$find_identicals <- function(df) {
+  col_names <- names(df)
+  feature_pairs <- combn(col_names, 2, simplify = FALSE)
+  
+  col1 <- c()
+  col2 <- c()
+  
+  for (pair in feature_pairs) {
+    f1 <- pair[1]
+    f2 <- pair[2]
+    if (!(f1 %in% col2) & !(f2 %in% col2)) {
+      if (identical(df[[f1]], df[[f2]])) {
+        col1 <- c(col1, f1)
+        col2 <- c(col2, f2)
+      }
+    }
+  }
+  col3 <- which(col_names %in% col2)
+  
+  output <- data.frame(x_column = col1, identical_column = col2, idx = col3)
+  output
 }
 
 # Convert a character string representing days of the week into an ordered factor (sun to sat)
