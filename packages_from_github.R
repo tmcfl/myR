@@ -10,6 +10,7 @@ devtools::install_github("smartinsightsfromdata/rpivotTable")
 
 # RSTUDIO ADDINS ----------------------------------------------------------
 # https://github.com/daattali/addinslist
+install.packages('addinslist')
 
 # addins manager
 devtools::install_github('rstudio/DT')
