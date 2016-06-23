@@ -8,6 +8,9 @@ devtools::install_github("ramnathv/htmlwidgets")
 # rpivotTable
 devtools::install_github("smartinsightsfromdata/rpivotTable")
 
+# xda: exploratory data analysis
+devtools::install_github("ujjwalkarn/xda")
+
 # RSTUDIO ADDINS ----------------------------------------------------------
 # https://github.com/daattali/addinslist
 install.packages('addinslist')
@@ -24,3 +27,6 @@ devtools::install_github("MangoTheCat/tidyshiny")
 
 # rpivotGadget
 devtools::install_github("dkilfoyle/rpivotGadget")
+
+# cronR: schedule R scripts/processes with the cron scheduler
+devtools::install_github("bnosac/cronR")
