@@ -1,4 +1,7 @@
 
+# ggTimeSeries
+devtools::install_github("Ather-Energy/ggTimeSeries")
+
 # purrr
 devtools::install_github("hadley/purrr")
 
