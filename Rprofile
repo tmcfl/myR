@@ -1,7 +1,7 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2017-01-12
+# UPDATED 2017-05-09
 
 options(width = 80)
 options(max.print = 500)
@@ -162,7 +162,7 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Simple count unique
-cnt_uniq <- function(df) {
+.env$cnt_uniq <- function(df) {
   #len_unique <- function(x) length(unique(na.omit(x)))
   #cnt_unique <- apply(df, 2, len_unique)
   cnt_unique <- apply(df, 2, data.table::uniqueN)
