@@ -161,6 +161,21 @@ utils::rc.settings(ipck = TRUE)
   }
 }
 
+# Simple count unique
+cnt_uniq <- function(df) {
+  #len_unique <- function(x) length(unique(na.omit(x)))
+  #cnt_unique <- apply(df, 2, len_unique)
+  cnt_unique <- apply(df, 2, data.table::uniqueN)
+  
+  output_df <- data.frame(
+    idx = 1:length(df),
+    col_name = names(df),
+    cnt_unique = cnt_unique,
+    row.names = NULL
+  )
+  output_df
+}
+
 # Find columns in a data frame with only 1 unique value (not counting missing)
 .env$find_constants <- function(df, with_NAs = FALSE) {
   if (with_NAs == TRUE) {
