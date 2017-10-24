@@ -262,8 +262,13 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Convert an Excel DateTime serial number to R DateTime
-.env$excel_date_to_datetime <- function(dt) {
-  (as.POSIXct(dt * (60*60*24), origin = "1899-12-30", tz = "UTC"))
+.env$excel_date_to_datetime <- function(dt, as_POSIXct = FALSE) {
+  # (as.POSIXct(dt * (60*60*24), origin = "1899-12-30", tz = "UTC")) # original method
+  output <- as.Date(dt, origin = "1899-12-30", tz = "UTC")
+  if(as_POSIXct) {
+    output <- as.POSIXct(output)
+  }
+  output
 }
 
 # Convert an Excel file (.xls or .xlsx) to a CSV
