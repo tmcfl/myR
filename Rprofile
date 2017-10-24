@@ -1,7 +1,7 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2017-05-09
+# UPDATED 2017-10-24
 
 options(width = 80)
 options(max.print = 500)
@@ -261,6 +261,18 @@ utils::rc.settings(ipck = TRUE)
   prod(x, ...)^(1/length(x))
 }
 
+# Convert an Excel DateTime serial number to R DateTime
+.env$excel_date_to_datetime <- function(dt) {
+  (as.POSIXct(dt * (60*60*24), origin = "1899-12-30", tz = "UTC"))
+}
+
+# Convert an Excel file (.xls or .xlsx) to a CSV
+.env$excel_to_csv <- function(fpath, sheet = NULL) {
+  df <- readxl::read_excel(fpath, sheet = sheet, na=c("NA", "N/A", "", "(blank)"), col_types = "text")
+  names(df) <- safenames(names(df))
+  fpath <- gsub("\\.xls.*", ".csv", fpath)
+  readr::write_csv(df, fpath, na="")
+}
 
 # Create a new project directory
 .env$newProj <- function(proj_name){
