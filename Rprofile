@@ -1,7 +1,7 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2017-10-24
+# UPDATED 2018-01-01
 
 options(width = 80)
 options(max.print = 500)
@@ -26,20 +26,20 @@ utils::rc.settings(ipck = TRUE)
 # this instructs R to, before anything else, echo a timestamp to the console
 # and to my R history file. Saves every command run in the console to a history file.
 .First <- function() {
-  if(interactive()) {
-    library(utils)
-    timestamp(, prefix = paste("##------ [", getwd(), "] ", sep = ""))
-  }
+	if(interactive()) {
+		library(utils)
+		timestamp(, prefix = paste("##------ [", getwd(), "] ", sep = ""))
+	}
 }
 
 # this instructs R, right before exiting, to write all commands I used in that
 # session to my R command history file.
 .Last <- function() {
-  if(interactive()) {
-    hist_file <- Sys.getenv("R_HISTFILE")
-    if(hist_file == "") hist_file <- "~/.RHistory"
-    savehistory(hist_file)
-  }
+	if(interactive()) {
+		hist_file <- Sys.getenv("R_HISTFILE")
+		if(hist_file == "") hist_file <- "~/.RHistory"
+		savehistory(hist_file)
+	}
 }
 
 # defines the packages I want automatically loaded
@@ -47,12 +47,12 @@ utils::rc.settings(ipck = TRUE)
 
 # loads the packages in "auto.loads" if the R session is interactive
 # if(interactive()) {
-#   invisible(sapply(auto.loads, sshhh))
+# 	invisible(sapply(auto.loads, sshhh))
 # }
 
 # if(interactive()) {
-#   invisible(suppressPackageStartupMessages(library("ggplot2")))
-#   invisible(suppressPackageStartupMessages(library("dplyr")))
+# 	invisible(suppressPackageStartupMessages(library("ggplot2")))
+# 	invisible(suppressPackageStartupMessages(library("dplyr")))
 # }
 
 ####################
@@ -73,8 +73,8 @@ utils::rc.settings(ipck = TRUE)
 
 # defines a function that loads a library into the namespace without warning or startup messages
 .env$shhh <- function(a.package) {
-  suppressWarnings(suppressPackageStartupMessages(
-  library(a.package, character.only=TRUE)))
+	suppressWarnings(suppressPackageStartupMessages(
+	library(a.package, character.only=TRUE)))
 }
 
 .env$library_shh <- function(x, ...){
@@ -89,9 +89,9 @@ utils::rc.settings(ipck = TRUE)
 
 # This defines a function to sanely undo a "factor()" call.
 .env$unfactor <- function(df) {
-  id <- sapply(df, is.factor)
-  df[id] <- sapply(df[id], as.character)
-  df
+	id <- sapply(df, is.factor)
+	df[id] <- sapply(df[id], as.character)
+	df
 }
 
 # Returns names(df) in single column, numbered matrix format.
@@ -107,81 +107,106 @@ utils::rc.settings(ipck = TRUE)
 
 # Quick defaults for data.table::fread
 .env$import_fread <- function(filepath, colclasses = NULL, sel = NULL){
-  df <- data.table::fread(input = filepath, na.strings = c("NA", "", " "), colClasses = colclasses, select = sel)
-  df
+	df <- data.table::fread(input = filepath, na.strings = c("NA", "", " "), colClasses = colclasses, select = sel)
+	df
+}
+
+# Get counts and percents of uniques and NA's per column of a data.frame
+# ... replacement for count_na and count_unique
+.env$dfcounts <- function(df, include_pct = TRUE, include_na = TRUE) {
+  shhh("data.table")
+  DT <- data.table(df)
+  
+  output <- 
+    data.frame(
+      idx = 1:length(DT)        # 1
+      , col_name = names(DT)    # 2
+      , col_class = DT[, sapply(.SD, class)]
+      , cnt_unique = DT[, sapply(.SD, function(x) uniqueN(x, na.rm = TRUE))]
+      , row.names = NULL
+    )
+  
+  if (include_pct) {
+    output$pct_unique <- round(output$cnt_unique / nrow(df), 8)
+    if (include_na) {
+      output$cnt_na <- DT[, sapply(.SD, function(x) sum(is.na(x)))]
+      output$pct_na <- round(output$cnt_na / nrow(df), 8)
+      return(output)
+    } else {
+      return(output)
+    }
+  }
+  if (!include_pct) {
+    if (include_na) {
+      output$cnt_na <- DT[, sapply(.SD, function(x) sum(is.na(x)))]
+      return(output)
+    }
+  }
 }
 
 # Get the count of NA's per column of a data.frame
 .env$count_na <- function(df, include_pct = FALSE, return_only_na_cols = FALSE){
+  warning("depricated: use dfcounts(df) instead")
   df_dim <- dim(df)
-  cnt_na <- apply(df, 2, function(x) sum(is.na(x)))
-  pct_na <- round(cnt_na / df_dim[1], 8)
-  output <- data.frame(idx = 1:df_dim[2], col_name = names(df), cnt_na = cnt_na, row.names = NULL)
+  cnt_na <- apply(is.na(df), 2, sum)
+  col_class <- sapply(df, class)
+  output <- data.frame(
+    idx = 1:df_dim[2], 
+    col_name = names(df), 
+    col_class = col_class,
+    cnt_na = cnt_na, 
+    row.names = NULL
+  )
   
   if (include_pct == TRUE) {
-    output$pct_na <- pct_na
+    output$pct_na <- round(cnt_na / df_dim[1], 8)
   }
-  
   if (return_only_na_cols == TRUE) {
     output <- output[output$cnt_na > 0, ]
   }
-  
   output
 }
 
 # Get the count of unique values per column of a data.frame
-.env$count_unique <- function(df, include_pct = FALSE, include_na = TRUE) {
-  col_class <- apply(df, 2, class)
+.env$count_unique <- function(df, include_pct = TRUE, include_na = FALSE) {
+  warning("depricated: use dfcounts(df) instead")
+  col_class <- sapply(df, class)
   cnt_unique <- apply(df, 2, function(x) length(unique(na.omit(x))))
-  cnt_na <- apply(df, 2, function(x) sum(is.na(x)))
-  
-  pct_unique <- round(cnt_unique / nrow(df), 8)
-  pct_na <- round(cnt_na / nrow(df), 8)
   
   output <- 
     data.frame(
-      idx = 1:length(df),       # 1
-      col_name = names(df),     # 2
-      col_class = col_class,    # 3
-      cnt_unique = cnt_unique,  # 4 - unique count
-      pct_unique = pct_unique,  # 5 - unique pct
-      cnt_na = cnt_na,          # 6 - na count
-      pct_na = pct_na,          # 7 - na pct
-      row.names = NULL
+      idx = 1:length(df)        # 1
+      , col_name = names(df)    # 2
+      , col_class = col_class   # 3
+      , cnt_unique = cnt_unique # 4 - unique count
+      , row.names = NULL
     )
   
-  if (include_na == TRUE & include_pct == FALSE) {
-    return(output[, c(1:4, 6)])
-  } else if (include_na == FALSE & include_pct == TRUE) {
-    return(output[, c(1:4, 5)])
-  } else if (include_na == TRUE & include_pct == TRUE) {
-    return(output)
-  } else {
-    return(output[, 1:4])
+  if (include_pct) {
+    output$pct_unique <- round(output$cnt_unique / nrow(df), 8)
+    if (include_na) {
+      output$cnt_na <- apply(is.na(df), 2, sum)
+      output$pct_na <- round(output$cnt_na / nrow(df), 8)
+      return(output)
+    } else {
+      return(output)
+    }
+  }
+  if (!include_pct) {
+    if (include_na) {
+      output$cnt_na <- apply(is.na(df), 2, sum)
+      return(output)
+    }
   }
 }
 
-# Simple count unique
-.env$cnt_uniq <- function(df) {
-  #len_unique <- function(x) length(unique(na.omit(x)))
-  #cnt_unique <- apply(df, 2, len_unique)
-  cnt_unique <- apply(df, 2, data.table::uniqueN)
-  
-  output_df <- data.frame(
-    idx = 1:length(df),
-    col_name = names(df),
-    cnt_unique = cnt_unique,
-    row.names = NULL
-  )
-  output_df
-}
 
 # Find columns in a data frame with only 1 unique value (not counting missing)
 .env$find_constants <- function(df, with_NAs = FALSE) {
   if (with_NAs == TRUE) {
-    subset(count_unique(df), cnt_unique == 1 & cnt_na > 0)
+    subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1 & cnt_na > 0)
   } else {
-    subset(count_unique(df), cnt_unique == 1)
+    subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1)
   }
 }
 
@@ -210,26 +235,25 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Use Desc and Manipulate to interactively explore a new dataset
-.env$interactive_exploration <- function(df, two_var=FALSE) {
-  library(manipulate)
-  library(DescTools)
-  
-  cnames <- colnames(df)
-  
-  if(two_var) {
-    manipulate(
-      Desc(df[[c_picker1]] ~ df[[c_picker2]], main = paste(c_picker1, c_picker2, sep = " ~ ")),
-      c_picker1 = picker(as.list(cnames)),
-      c_picker2 = picker(as.list(cnames))
-    )
-  } else {
-    manipulate(
-      Desc(df[[c_picker1]], main = c_picker1),
-      c_picker1 = picker(as.list(cnames))
-    )
-  }
-}
-
+# .env$interactive_exploration <- function(df, two_var=FALSE) {
+#   library(manipulate)
+#   library(DescTools)
+#   
+#   cnames <- colnames(df)
+#   
+#   if(two_var) {
+#     manipulate(
+#       Desc(df[[c_picker1]] ~ df[[c_picker2]], main = paste(c_picker1, c_picker2, sep = " ~ ")),
+#       c_picker1 = picker(as.list(cnames)),
+#       c_picker2 = picker(as.list(cnames))
+#     )
+#   } else {
+#     manipulate(
+#       Desc(df[[c_picker1]], main = c_picker1),
+#       c_picker1 = picker(as.list(cnames))
+#     )
+#   }
+# }
 
 # Convert a character string representing days of the week into an ordered factor (sun to sat)
 .env$dow2factor <- function(x){
@@ -272,11 +296,11 @@ utils::rc.settings(ipck = TRUE)
 }
 
 # Convert an Excel file (.xls or .xlsx) to a CSV
-.env$excel_to_csv <- function(fpath, sheet = NULL) {
-  df <- readxl::read_excel(fpath, sheet = sheet, na=c("NA", "N/A", "", "(blank)"), col_types = "text")
+.env$excel_to_csv <- function(fpath, sheet = NULL, na = c("NA", "N/A", "")) {
+  df <- readxl::read_excel(fpath, sheet = sheet, na = na, col_types = "text")
   names(df) <- safenames(names(df))
   fpath <- gsub("\\.xls.*", ".csv", fpath)
-  readr::write_csv(df, fpath, na="")
+  readr::write_csv(df, fpath, na = "")
 }
 
 # Create a new project directory
