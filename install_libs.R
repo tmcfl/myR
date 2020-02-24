@@ -41,6 +41,19 @@ install.packages("zoo")
 install.packages("e1071")
 install.packages("broom")
 install.packages("questionr")
+install.packages("beepr")
+install.packages("fastDummies")
+install.packages("feather")
+install.packages("mltools")
+install.packages("odbc")
+install.packages("openxlsx")
+install.packages("pacman")
+install.packages("pbapply")
+install.packages("rJava")
+install.packages("rjson")
+install.packages("xgboost")
+install.packages("h2o")
+
 
 install.packages("RODBC") # install after xcode / command line tools
 
