@@ -1,9 +1,9 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2021-02-12
+# UPDATED 2021-02-15
 # !! remember to update the version number at the bottom
-# ''' modified safenames to work with more objects than just a char vec '''
+# ''' Updated count_na and count_unique to be more reliable '''
 
 options(width = 80)
 options(max.print = 500)
@@ -117,6 +117,22 @@ utils::rc.settings(ipck = TRUE)
 	df
 }
 
+# Helper functions
+.env$col_class_ <- function(x) { (class(x)[1]) }
+.env$cnt_na_ <- function(x) { sum(is.na(x)) }
+.env$cnt_unique_ <- function(x, na.rm = TRUE) {
+  if(isTRUE(na.rm)) {
+    x <- na.omit(x)
+    y <- length(x[!duplicated(x)])
+  }
+  if(isFALSE(na.rm)) {
+    y <- length(x[!duplicated(x)])
+  }
+  y
+}
+.env$pct_na_ <- function(x) { round(cnt_na_(x) / length(x), 8)}
+.env$pct_unique_ <- function(x) { round(cnt_unique_(x) / length(x), 8) }
+
 # Get counts and percents of uniques and NA's per column of a data.frame
 # ... replacement for count_na and count_unique
 .env$dfcounts <- function(df, include_vis = TRUE) {
@@ -212,65 +228,66 @@ utils::rc.settings(ipck = TRUE)
 
 
 # Get the count of NA's per column of a data.frame
-.env$count_na <- function(df, include_pct = FALSE, return_only_na_cols = FALSE){
-  warning("depricated: use dfcounts(df) instead")
-  df_dim <- dim(df)
-  cnt_na <- apply(is.na(df), 2, sum)
-  col_class <- sapply(df, class)
-  output <- data.frame(
-    idx = 1:df_dim[2], 
-    col_name = names(df), 
-    col_class = col_class,
-    cnt_na = cnt_na, 
-    row.names = NULL
+.env$count_na <- function(df, include_unique = FALSE, return_only_na_cols = FALSE){
+  if(!is.data.frame(df)) {stop("You supplied something other than a dataframe")}
+  
+  n_rows <- nrow(df)
+  col_class <- sapply(df, col_class_)
+  cnt_na <- sapply(df, cnt_na_)
+  pct_na <- sapply(df, pct_na_)
+  
+  output <- 
+    dplyr::tibble(
+    idx = 1:ncol(df)
+    , col_name = names(df)
+    , col_class = col_class
+    , cnt_na = cnt_na
+    , pct_na = pct_na
   )
   
-  if (include_pct == TRUE) {
-    output$pct_na <- round(cnt_na / df_dim[1], 8)
-  }
-  if (return_only_na_cols == TRUE) {
+  if(isTRUE(return_only_na_cols)) {
     output <- output[output$cnt_na > 0, ]
+  }
+  if(isTRUE(include_unique)) {
+    cnt_unique <- sapply(df[, output$col_name], cnt_unique_)
+    pct_unique <- sapply(df[, output$col_name], pct_unique_)
+    output[["cnt_unique"]] <- cnt_unique
+    output[["pct_unique"]] <- pct_unique
   }
   output
 }
 
 # Get the count of unique values per column of a data.frame
-.env$count_unique <- function(df, include_pct = TRUE, include_na = FALSE) {
-  warning("depricated: use dfcounts(df) instead")
-  col_class <- sapply(df, class)
-  cnt_unique <- apply(df, 2, function(x) length(unique(na.omit(x))))
+.env$count_unique <- function(df, include_na = FALSE) {
+  if(!is.data.frame(df)) {stop("You supplied something other than a dataframe")}
+  
+  n_rows <- nrow(df)
+  col_class <- sapply(df, col_class_)
+  cnt_unique <- sapply(df, cnt_unique_)
+  pct_unique <- sapply(df, pct_unique_)
   
   output <- 
-    data.frame(
-      idx = 1:length(df)        # 1
+    dplyr::tibble(
+      idx = 1:ncol(df)          # 1
       , col_name = names(df)    # 2
       , col_class = col_class   # 3
       , cnt_unique = cnt_unique # 4 - unique count
-      , row.names = NULL
+      , pct_unique = pct_unique
     )
   
-  if (include_pct) {
-    output$pct_unique <- round(output$cnt_unique / nrow(df), 8)
-    if (include_na) {
-      output$cnt_na <- apply(is.na(df), 2, sum)
-      output$pct_na <- round(output$cnt_na / nrow(df), 8)
-      return(output)
-    } else {
-      return(output)
-    }
+  if(isTRUE(include_na)) {
+    cnt_na <- sapply(df, cnt_na_)
+    pct_na <- sapply(df, pct_na_)
+    output[["cnt_na"]] <- cnt_na
+    output[["pct_na"]] <- pct_na
   }
-  if (!include_pct) {
-    if (include_na) {
-      output$cnt_na <- apply(is.na(df), 2, sum)
-      return(output)
-    }
-  }
+  output
 }
 
 
 # Find columns in a data frame with only 1 unique value (not counting missing)
 .env$find_constants <- function(df, with_NAs = FALSE) {
-  if (with_NAs == TRUE) {
+  if (isTRUE(with_NAs)) {
     subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1 & cnt_na > 0)
   } else {
     subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1)
@@ -397,5 +414,5 @@ message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
 message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
-message("\n*** Successfully loaded ~/.Rprofile, version: 2021.02.12 ***\n")
+message("\n*** Successfully loaded ~/.Rprofile, version: 2021.02.15 ***\n")
 # helpful for warning myself if I meant to run vanilla R
