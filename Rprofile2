@@ -1,9 +1,9 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2021-02-15
+# UPDATED 2021-02-18
 # !! remember to update the version number at the bottom
-# ''' Updated count_na and count_unique to be more reliable '''
+# ''' Added new function print_all() to print all rows of a dataframe by default '''
 
 options(width = 80)
 options(max.print = 500)
@@ -92,6 +92,11 @@ utils::rc.settings(ipck = TRUE)
 	id <- sapply(df, is.factor)
 	df[id] <- sapply(df[id], as.character)
 	df
+}
+
+# Print all rows of a dataframe by default, or specify number of rows as a parameter
+.env$print_all <- function(df, n = Inf) {
+  print(tibble::tibble(df), n = n)
 }
 
 # Returns names(df) in single column, numbered matrix format.
@@ -414,5 +419,5 @@ message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
 message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
-message("\n*** Successfully loaded ~/.Rprofile, version: 2021.02.15 ***\n")
+message("\n*** Successfully loaded ~/.Rprofile, version: 2021.02.18 ***\n")
 # helpful for warning myself if I meant to run vanilla R
