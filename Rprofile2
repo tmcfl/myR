@@ -1,9 +1,9 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2021-02-18
+# UPDATED 2021-03-08
 # !! remember to update the version number at the bottom
-# ''' Added new function print_all() to print all rows of a dataframe by default '''
+# ''' added sample of df to count_na() and count_unique() '''
 
 options(width = 80)
 options(max.print = 500)
@@ -135,8 +135,8 @@ utils::rc.settings(ipck = TRUE)
   }
   y
 }
-.env$pct_na_ <- function(x) { round(cnt_na_(x) / length(x), 8)}
-.env$pct_unique_ <- function(x) { round(cnt_unique_(x) / length(x), 8) }
+.env$pct_na_ <- function(x) { round(cnt_na_(x) / length(x), 5)}
+.env$pct_unique_ <- function(x) { round(cnt_unique_(x) / length(x), 5) }
 
 # Get counts and percents of uniques and NA's per column of a data.frame
 # ... replacement for count_na and count_unique
@@ -243,12 +243,12 @@ utils::rc.settings(ipck = TRUE)
   
   output <- 
     dplyr::tibble(
-    idx = 1:ncol(df)
-    , col_name = names(df)
-    , col_class = col_class
-    , cnt_na = cnt_na
-    , pct_na = pct_na
-  )
+      idx = 1:ncol(df)
+      , col_name = names(df)
+      , col_class = col_class
+      , cnt_na = cnt_na
+      , pct_na = pct_na
+    )
   
   if(isTRUE(return_only_na_cols)) {
     output <- output[output$cnt_na > 0, ]
@@ -259,6 +259,12 @@ utils::rc.settings(ipck = TRUE)
     output[["cnt_unique"]] <- cnt_unique
     output[["pct_unique"]] <- pct_unique
   }
+  
+  sample_len <- ifelse(n_rows < 50, n_rows, 50)
+  row_idx <- sort(sample(1:n_rows, size = sample_len))
+  col_sample <- sapply(df[row_idx, output$col_name], function(x) stringr::str_trunc(paste(x, collapse = ", "), width = 80))
+  output[["sample"]] <- col_sample
+  
   output
 }
 
@@ -286,6 +292,12 @@ utils::rc.settings(ipck = TRUE)
     output[["cnt_na"]] <- cnt_na
     output[["pct_na"]] <- pct_na
   }
+
+  sample_len <- ifelse(n_rows < 50, n_rows, 50)
+  row_idx <- sort(sample(1:n_rows, size = sample_len))
+  col_sample <- sapply(df[row_idx, output$col_name], function(x) stringr::str_trunc(paste(x, collapse = ", "), width = 80))
+  output[["sample"]] <- col_sample
+
   output
 }
 
@@ -419,5 +431,5 @@ message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
 message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
-message("\n*** Successfully loaded ~/.Rprofile, version: 2021.02.18 ***\n")
+message("\n*** Successfully loaded ~/.Rprofile, version: 2021.03.08 ***\n")
 # helpful for warning myself if I meant to run vanilla R
