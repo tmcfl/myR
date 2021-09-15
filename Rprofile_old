@@ -1,21 +1,17 @@
 ###########
 # OPTIONS #
 ###########
-# UPDATED 2021-09-15  (!! remember to update the version number at the bottom)
-# CHANGES:
-#  - changed max.print option from 300 to 3000
-#  - added tibble.print_max option
-#  - added new helper function zero_if_na()
-#  - fixed issue with dfcounts() where all-null df columns caused an error with the viz_func() function
+# UPDATED 2018-01-01
 
 options(width = 80)
-options(max.print = 3000)
-options(tibble.print_max = 300)
+options(max.print = 500)
 options(stringsAsFactors = FALSE)
 options(datatable.fread.datatable = FALSE)
 options(row.names = FALSE)
 #options(strip.white = TRUE)
 Sys.setenv(TZ = "UTC")
+#Sys.setenv("plotly_api_key" = "rxwd8zm45i")
+#Sys.setenv("plotly_username" = "tmcfl")
 
 # effectively forces R to never use scientific notation to express very small or large numbers
 options(scipen = 10)
@@ -98,93 +94,26 @@ utils::rc.settings(ipck = TRUE)
 	df
 }
 
-# Print all rows of a dataframe by default, or specify number of rows as a parameter
-.env$print_all <- function(df, n = Inf) {
-  print(tibble::tibble(df), n = n)
-}
-
 # Returns names(df) in single column, numbered matrix format.
 .env$dfnames <- function(df) matrix(names(df))
 
 # Makes names safer
-.env$safenames <- function(x) {
-  safe_names <- names(x)
-  if(is.null(safe_names)) {
-    if(!is.character(x)) { stop("You supplied something other than a dataframe or character vector") }
-    safe_names <- x
-  }
-  safe_names <- trimws(safe_names)
-  safe_names <- gsub('[^a-zA-Z0-9_]+', '_', safe_names) # replace anything that's not a lowercase letter or a number with underscore
-  safe_names <- make.names(safe_names, unique = TRUE)
-  safe_names <- gsub('.', '_', safe_names, fixed = TRUE)
-  safe_names
+.env$safenames <- function(names) {
+  names <- gsub('[^a-z0-9]+', '_', tolower(names))
+  names <- make.names(names, unique = TRUE, allow_ = TRUE)
+  names <- gsub('.', '_', names, fixed = TRUE)
+  names
 }
 
 # Quick defaults for data.table::fread
-.env$import_fread <- function(filepath, colclasses = NULL, select = NULL){
-	df <- data.table::fread(input = filepath, colClasses = colclasses, select = select)
+.env$import_fread <- function(filepath, colclasses = NULL, sel = NULL){
+	df <- data.table::fread(input = filepath, na.strings = c("NA", "", " "), colClasses = colclasses, select = sel)
 	df
 }
 
-# Helper functions
-.env$zero_if_na <- function(x) {
-  x[is.na(x)] <- 0
-  x
-}
-.env$col_class_ <- function(x) { (class(x)[1]) }
-.env$cnt_na_ <- function(x) { sum(is.na(x)) }
-.env$cnt_unique_ <- function(x, na.rm = TRUE) {
-  if(isTRUE(na.rm)) {
-    x <- na.omit(x)
-    y <- length(x[!duplicated(x)])
-  }
-  if(isFALSE(na.rm)) {
-    y <- length(x[!duplicated(x)])
-  }
-  y
-}
-.env$pct_na_ <- function(x) { round(cnt_na_(x) / length(x), 5)}
-.env$pct_unique_ <- function(x) { round(cnt_unique_(x) / length(x), 5) }
-
 # Get counts and percents of uniques and NA's per column of a data.frame
 # ... replacement for count_na and count_unique
-.env$dfcounts <- function(df, include_vis = TRUE) {
-  shhh("data.table")
-  DT <- data.table(df)
-  nrow_df <- nrow(df)
-  
-  output <- 
-    data.frame(
-      idx = 1:length(DT)        # 1
-      , col_name = names(DT)    # 2
-      , col_class = DT[, sapply(.SD, function(x) class(x)[1])]
-      , cnt_uniq = DT[, sapply(.SD, function(x) uniqueN(x, na.rm = TRUE))]
-      , cnt_na = DT[, sapply(.SD, function(x) sum(is.na(x)))]
-      , row.names = NULL
-    )
-  detach("package:data.table")
-  
-  output$pct_uniq <- round(output$cnt_uniq / (nrow_df - output$cnt_na), 4)
-  output$pct_na <- round(output$cnt_na / nrow_df, 4)
-  output[, 4:7] <- sapply(output[, 4:7], zero_if_na)
-  
-  vis_func <- function(x) {
-    pct_bar <- stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " ")
-    paste0("|", pct_bar, "|")
-  }
-  
-  if (include_vis) {
-    output$vis_uniq <- sapply(output$pct_uniq, vis_func)
-    output$vis_na <- sapply(output$pct_na, vis_func)
-    return(output[, c("idx", "col_name", "col_class", "cnt_uniq", "pct_uniq", "vis_uniq", 
-                      "cnt_na", "pct_na", "vis_na")])
-  } else {
-    return(output[, c("idx", "col_name", "col_class", "cnt_uniq", "pct_uniq", "cnt_na", "pct_na")])
-  }
-}
-
-# Legacy dfcounts()
-.env$dfcounts_ <- function(df, include_pct = TRUE, include_na = TRUE, include_vis = TRUE) {
+.env$dfcounts <- function(df, include_pct = TRUE, include_na = TRUE) {
   shhh("data.table")
   DT <- data.table(df)
   
@@ -198,34 +127,10 @@ utils::rc.settings(ipck = TRUE)
     )
   
   if (include_pct) {
-    output$pct_unique <- round(output$cnt_unique / nrow(df), 4)
-    if(include_vis) {
-      output$vis_unique <- sapply(
-        output$pct_unique, 
-        function(x) {
-          paste0(
-            "|", 
-            stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " "),
-            "|"
-          )
-        }
-      )
-    }
+    output$pct_unique <- round(output$cnt_unique / nrow(df), 8)
     if (include_na) {
       output$cnt_na <- DT[, sapply(.SD, function(x) sum(is.na(x)))]
-      output$pct_na <- round(output$cnt_na / nrow(df), 4)
-      if(include_vis) {
-        output$vis_na <- sapply(
-          output$pct_na, 
-          function(x) {
-            paste0(
-              "|", 
-              stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " "),
-              "|"
-            )
-          }
-        )
-      }
+      output$pct_na <- round(output$cnt_na / nrow(df), 8)
       return(output)
     } else {
       return(output)
@@ -239,81 +144,66 @@ utils::rc.settings(ipck = TRUE)
   }
 }
 
-
-
 # Get the count of NA's per column of a data.frame
-.env$count_na <- function(df, include_unique = FALSE, return_only_na_cols = FALSE){
-  if(!is.data.frame(df)) {stop("You supplied something other than a dataframe")}
+.env$count_na <- function(df, include_pct = FALSE, return_only_na_cols = FALSE){
+  warning("depricated: use dfcounts(df) instead")
+  df_dim <- dim(df)
+  cnt_na <- apply(is.na(df), 2, sum)
+  col_class <- sapply(df, class)
+  output <- data.frame(
+    idx = 1:df_dim[2], 
+    col_name = names(df), 
+    col_class = col_class,
+    cnt_na = cnt_na, 
+    row.names = NULL
+  )
   
-  n_rows <- nrow(df)
-  col_class <- sapply(df, col_class_)
-  cnt_na <- sapply(df, cnt_na_)
-  pct_na <- sapply(df, pct_na_)
-  
-  output <- 
-    dplyr::tibble(
-      idx = 1:ncol(df)
-      , col_name = names(df)
-      , col_class = col_class
-      , cnt_na = cnt_na
-      , pct_na = pct_na
-    )
-  
-  if(isTRUE(return_only_na_cols)) {
+  if (include_pct == TRUE) {
+    output$pct_na <- round(cnt_na / df_dim[1], 8)
+  }
+  if (return_only_na_cols == TRUE) {
     output <- output[output$cnt_na > 0, ]
   }
-  if(isTRUE(include_unique)) {
-    cnt_unique <- sapply(df[, output$col_name], cnt_unique_)
-    pct_unique <- sapply(df[, output$col_name], pct_unique_)
-    output[["cnt_unique"]] <- cnt_unique
-    output[["pct_unique"]] <- pct_unique
-  }
-  
-  sample_len <- ifelse(n_rows < 50, n_rows, 50)
-  row_idx <- sort(sample(1:n_rows, size = sample_len))
-  col_sample <- sapply(df[row_idx, output$col_name], function(x) stringr::str_trunc(paste(x, collapse = ", "), width = 80))
-  output[["sample"]] <- col_sample
-  
   output
 }
 
 # Get the count of unique values per column of a data.frame
-.env$count_unique <- function(df, include_na = FALSE) {
-  if(!is.data.frame(df)) {stop("You supplied something other than a dataframe")}
-  
-  n_rows <- nrow(df)
-  col_class <- sapply(df, col_class_)
-  cnt_unique <- sapply(df, cnt_unique_)
-  pct_unique <- sapply(df, pct_unique_)
+.env$count_unique <- function(df, include_pct = TRUE, include_na = FALSE) {
+  warning("depricated: use dfcounts(df) instead")
+  col_class <- sapply(df, class)
+  cnt_unique <- apply(df, 2, function(x) length(unique(na.omit(x))))
   
   output <- 
-    dplyr::tibble(
-      idx = 1:ncol(df)          # 1
+    data.frame(
+      idx = 1:length(df)        # 1
       , col_name = names(df)    # 2
       , col_class = col_class   # 3
       , cnt_unique = cnt_unique # 4 - unique count
-      , pct_unique = pct_unique
+      , row.names = NULL
     )
   
-  if(isTRUE(include_na)) {
-    cnt_na <- sapply(df, cnt_na_)
-    pct_na <- sapply(df, pct_na_)
-    output[["cnt_na"]] <- cnt_na
-    output[["pct_na"]] <- pct_na
+  if (include_pct) {
+    output$pct_unique <- round(output$cnt_unique / nrow(df), 8)
+    if (include_na) {
+      output$cnt_na <- apply(is.na(df), 2, sum)
+      output$pct_na <- round(output$cnt_na / nrow(df), 8)
+      return(output)
+    } else {
+      return(output)
+    }
   }
-
-  sample_len <- ifelse(n_rows < 50, n_rows, 50)
-  row_idx <- sort(sample(1:n_rows, size = sample_len))
-  col_sample <- sapply(df[row_idx, output$col_name], function(x) stringr::str_trunc(paste(x, collapse = ", "), width = 80))
-  output[["sample"]] <- col_sample
-
-  output
+  if (!include_pct) {
+    if (include_na) {
+      output$cnt_na <- apply(is.na(df), 2, sum)
+      return(output)
+    }
+  }
 }
 
 
 # Find columns in a data frame with only 1 unique value (not counting missing)
 .env$find_constants <- function(df, with_NAs = FALSE) {
-  if (isTRUE(with_NAs)) {
+  if (with_NAs == TRUE) {
     subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1 & cnt_na > 0)
   } else {
     subset(dfcounts(df, include_pct = FALSE), cnt_unique == 1)
@@ -440,5 +330,5 @@ message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
 message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
-message("\n*** Successfully loaded ~/.Rprofile, version: 2021.03.08 ***\n")
+message("\n*** Successfully loaded ~/.Rprofile ***\n")
 # helpful for warning myself if I meant to run vanilla R
