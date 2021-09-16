@@ -164,8 +164,10 @@ utils::rc.settings(ipck = TRUE)
     )
   detach("package:data.table")
   
-  output$pct_uniq <- round(output$cnt_uniq / (nrow_df - output$cnt_na), 4)
-  output$pct_na <- round(output$cnt_na / nrow_df, 4)
+  # output$pct_uniq <- round(output$cnt_uniq / (nrow_df - output$cnt_na), 4)
+  output$pct_uniq <- as.numeric(substr(output$cnt_uniq / (nrow_df - output$cnt_na), 1, 6))
+  # output$pct_na <- round(output$cnt_na / nrow_df, 4)
+  output$pct_na <- as.numeric(substr(output$cnt_na / nrow_df, 1, 6))
   output[, 4:7] <- sapply(output[, 4:7], zero_if_na)
   
   vis_func <- function(x) {
