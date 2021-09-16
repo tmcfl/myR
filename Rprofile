@@ -443,3 +443,4 @@ message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
 message("\n", profile_message, "\n")
 # helpful for warning myself if I meant to run vanilla R
+rm(updated, profile_message)
