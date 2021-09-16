@@ -1,7 +1,7 @@
-###########
-# OPTIONS #
-###########
-# UPDATED 2021-09-15  (!! remember to update the version number at the bottom)
+#----------------------------------------------------------------------------------------------------
+# OPTIONS #------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+updated <- "2021.09.15"
 # CHANGES:
 #  - changed max.print option from 300 to 3000
 #  - added tibble.print_max option
@@ -59,9 +59,9 @@ utils::rc.settings(ipck = TRUE)
 # 	invisible(suppressPackageStartupMessages(library("dplyr")))
 # }
 
-####################
-# CUSTOM FUNCTIONS #
-####################
+#----------------------------------------------------------------------------------------------------
+# CUSTOM FUNCTIONS #---------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
 
 # better defaults for write.csv
 # write.csv <- function(adataframe, filename, ...){
@@ -170,7 +170,7 @@ utils::rc.settings(ipck = TRUE)
   
   vis_func <- function(x) {
     pct_bar <- stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " ")
-    paste0("|", pct_bar, "|")
+    paste0("|", pct_bar)
   }
   
   if (include_vis) {
@@ -433,6 +433,7 @@ utils::rc.settings(ipck = TRUE)
 
 attach(.env)
 
+profile_message <- paste0("*** Successfully loaded ~/.Rprofile, version: ", updated, " ***")
 
 # Remind myself about changed defaults
 message("*** Changed Defaults: ***")
@@ -440,5 +441,5 @@ message("options(stringsAsFactors=FALSE)")
 message("options(datatable.fread.datatable=FALSE)")
 message("options(row.names=FALSE)")
 message("Sys.setenv(TZ='UTC'), not 'MDT'")
-message("\n*** Successfully loaded ~/.Rprofile, version: 2021.03.08 ***\n")
+message("\n", profile_message, "\n")
 # helpful for warning myself if I meant to run vanilla R
