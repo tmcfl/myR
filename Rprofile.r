@@ -1,12 +1,16 @@
 #----------------------------------------------------------------------------------------------------
-# OPTIONS #------------------------------------------------------------------------------------------
+# NOTES
+# - File source is ~/repositories/myR/Rprofile.r
+# - After replicating myR to a new computer, remember to update the permissions of Rprofile.r
+#     chmod +x Rprofile.r
+# - Symlink the source file into user home directory: 
+#     ln -s ~/repositories/myR/Rprofile.r ~/.Rprofile
+# - Don't forget to commit changes after making any edits or updates
 #----------------------------------------------------------------------------------------------------
-updated <- "2022.01.11"
+
+updated <- "2022.02.17"
 # CHANGES:
-#  - changed max.print option from 300 to 3000
-#  - added tibble.print_max option
-#  - added new helper function zero_if_na()
-#  - fixed issue with dfcounts() where all-null df columns caused an error with the viz_func() function
+#  - updated viz_func() in dfcounts() to better show the right-side bar limit
 
 Sys.setenv(TZ = "UTC")
 
@@ -186,9 +190,20 @@ utils::rc.settings(ipck = TRUE)
   output$pct_na <- trim_numeric(output$cnt_na / nrow_df)
   output[, 4:7] <- sapply(output[, 4:7], zero_if_na)
   
+  # vis_func <- function(x) {
+  #   pct_bar <- stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " ")
+  #   paste0("|", pct_bar)
+  # }
   vis_func <- function(x) {
-    pct_bar <- stringr::str_pad(paste0(c(rep_len("-", floor(10*x))), collapse = ""), 10, "right", " ")
-    paste0("|", pct_bar)
+    pct_val <- floor(10 * x)
+    bar_vec <- rep_len("-", pct_val)
+    pct_bar <- stringr::str_pad(
+      string = paste0(bar_vec, collapse = ""), 
+      width = 10, 
+      side = "right", 
+      pad = " "
+    )
+    paste0("|", pct_bar, "|")
   }
   
   if (include_vis) {
