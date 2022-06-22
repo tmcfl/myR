@@ -8,9 +8,9 @@
 # - Don't forget to commit changes after making any edits or updates
 #----------------------------------------------------------------------------------------------------
 
-updated <- "2022.02.17"
+updated <- "2022.06.22"
 # CHANGES:
-#  - updated viz_func() in dfcounts() to better show the right-side bar limit
+#  - updated `user_current_lib_path` (Default Library) for m1 mac on macOS 12.3
 
 Sys.setenv(TZ = "UTC")
 
@@ -28,12 +28,20 @@ options(continue = "... ")
 # Default CRAN mirror
 # options(repos=structure(c(CRAN="https://cloud.r-project.org/")))
 
-# Default library
-user_current_lib_path <- 
+# Default library (old, on intel macs)
+# user_current_lib_path <- 
+#   paste0(
+#     "/Users/", Sys.getenv("USER"), "/Library/R/x86_64/",
+#     R.Version()$major, ".", substr(R.Version()$minor, 1, 1),
+#     "/library"
+#   )
+
+# Default library (macOS 12.3, arm chip, added 2022-06-22)
+user_current_lib_path <-
   paste0(
-    "/Users/", Sys.getenv("USER"), "/Library/R/x86_64/",
+    "/Library/Frameworks/R.framework/Versions/",
     R.Version()$major, ".", substr(R.Version()$minor, 1, 1),
-    "/library"
+    "-arm64/Resources/library"
   )
 
 .libPaths(c(user_current_lib_path, .libPaths()))
