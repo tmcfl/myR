@@ -475,7 +475,24 @@ utils::rc.settings(ipck = TRUE)
   }
 }
 
+# Import other custom functions if the files exist
+functions_path <- "~/projects/R/functions/"
+file_names <- c(
+  "redshift_driver.R",
+  "get_redshift_conn_info.R",
+  "redshift_connect.R"
+)
+for(f in file_names) {
+  fp <- paste0(functions_path, f)
+  if( file.exists(fp) ) {
+    source(fp, local=.env)
+  }
+}
+rm(functions_path, file_names, f, fp)
 
+
+
+# FINALIZE ------------------------------------------------------------------------------------
 attach(.env)
 
 profile_message <- paste0("*** Successfully loaded ~/.Rprofile, version: ", updated, " ***")

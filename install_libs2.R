@@ -4,8 +4,14 @@ package_list <- c(
   "tidyverse",
   "DescTools",
   "lubridate",
+  "box",  # https://github.com/klmr/box
   "caret",
   "data.table",
+  "janitor",  # https://github.com/sfirke/janitor
+  "remotes",
+  "clock",  # https://clock.r-lib.org/
+  "naniar",  # https://github.com/njtierney/naniar
+  "Hmisc",
   "ggExtra",
   "ggvis",
   "ada",
@@ -67,13 +73,14 @@ for(p in package_list) {
 
 
 # GITHUB PACKAGES ---------------------------------------------------------
-devtools::install_github("Ather-Energy/ggTimeSeries")
-devtools::install_github("dkilfoyle/rpivotGadget")
-devtools::install_github("ujjwalkarn/xda") # xda: exploratory data analysis
-devtools::install_github("MangoTheCat/tidyshiny") # tidyshiny - use tidyr interactively to gather columns into rows - tidyData(iris)
-devtools::install_github("bnosac/cronR") # cronR: schedule R scripts/processes with the cron scheduler
+remotes::install_github("ropensci/skimr") # https://github.com/ropensci/skimr
+remotes::install_github("Ather-Energy/ggTimeSeries")
+remotes::install_github("dkilfoyle/rpivotGadget")
+remotes::install_github("ujjwalkarn/xda") # xda: exploratory data analysis
+remotes::install_github("MangoTheCat/tidyshiny") # tidyshiny - use tidyr interactively to gather columns into rows - tidyData(iris)
+remotes::install_github("bnosac/cronR") # cronR: schedule R scripts/processes with the cron scheduler
 
 # addins manager
-devtools::install_github('rstudio/DT')
-devtools::install_github("csgillespie/addinmanager")
+remotes::install_github('rstudio/DT')
+remotes::install_github("csgillespie/addinmanager")
 
