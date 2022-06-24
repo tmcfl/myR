@@ -47,6 +47,8 @@ package_list <- c(
   "beepr",
   "fastDummies",
   "feather",
+  "fasttime",
+  "arrow",
   "mltools",
   "odbc",
   "openxlsx",
